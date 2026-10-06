@@ -10,7 +10,7 @@ const Nav = () => {
           to="/"
           className={({ isActive }) =>
             `relative  text-white transition-all duration-300 
-            ${isActive ? 'text-yellow-300 poppins-bold' : 'text-white'}`
+            ${isActive ? 'text-yellow-300 poppins-bold border-1 border-white  rounded-sm px-2' : 'text-white'}`
           }
         >
           Home
@@ -20,7 +20,7 @@ const Nav = () => {
           to="/about"
           className={({ isActive }) =>
             `relative text-white transition-all duration-300
-            ${isActive ? 'text-yellow-300 poppins-bold' : 'text-white'}`
+            ${isActive ? 'text-yellow-300 poppins-bold border-1 border-white  rounded-sm px-2' : 'text-white'}`
           }
         >
           About
@@ -30,10 +30,20 @@ const Nav = () => {
           to="/register"
           className={({ isActive }) =>
             `relative text-white transition-all duration-300
-            ${isActive ? 'text-yellow-300 poppins-bold' : 'text-white'}`
+            ${isActive ? 'text-yellow-300 poppins-bold border-1 border-white  rounded-sm px-2' : 'text-white'}`
           }
         >
           Register
+        </NavLink>
+        
+        <NavLink
+          to="/login"
+          className={({ isActive }) =>
+            `relative  text-white transition-all duration-300 
+            ${isActive ? 'text-yellow-300 poppins-bold border-1 border-white  rounded-sm px-2' : 'text-white'}`
+          }
+        >
+          Login
         </NavLink>
         </ul>
     </div>

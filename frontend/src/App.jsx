@@ -7,6 +7,7 @@ import Register from './components/Register';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import Dashboard from './components/Dashboard';
+import Login from './components/Login';
 
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
       </Route>
 
       {/* Authenticated */}

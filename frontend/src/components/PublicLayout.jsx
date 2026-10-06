@@ -4,7 +4,7 @@ import Nav from './Nav'
 
 const PublicLayout = () => {
   return (
-    <div className="public bg-black min-h-screen w-full relative">
+    <div className="public bg-black min-h-screen w-full relative overflow-y-hidden">
       <Nav />
         <div className="absolute inset-0 z-0">
             <video
@@ -14,10 +14,10 @@ const PublicLayout = () => {
             loop
             className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/55"></div>
+            <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-      <div className="content relative">
+      <div className="content relative z-20">
         <Outlet />
       </div>
     </div>
