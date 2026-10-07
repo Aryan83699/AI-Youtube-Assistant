@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     client = AsyncMongoClient(
         os.getenv("MONGODB_URL")
     )
-    
+    await client.admin.command("ping")
     app.state.mongo_client = client
 
     try:
@@ -65,7 +65,7 @@ async def login(user_data:LoginRequest,request:Request,response:Response,db=Depe
     if not user or password!=user.get("password") :
         raise HTTPException(status_code=401,detail="User not found")
     token=JWTTokens()
-    response.set_cookie(key="Token",value=token)
+    response.set_cookie(key="Token",value=token,secure=False,samesite='lax')
     return "Success"
 
    

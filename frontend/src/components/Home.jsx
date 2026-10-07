@@ -1,6 +1,4 @@
-import React, { useEffect,useState } from 'react'
-import axios from 'axios';
-
+import React from 'react';
 
 const Home = () => {
   return (
@@ -12,7 +10,7 @@ const Home = () => {
         </div>
         <div className="right">
             <p className='text-xl leading-8 poppins-medium-italic text-white'>
-                {data}
+                
             </p>
         </div>
     </div>
