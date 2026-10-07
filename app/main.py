@@ -1,5 +1,5 @@
 from fastapi import FastAPI,Request,Depends,HTTPException,Response
-from app.services.otp import send_otp
+from app.auth.otp import send_otp
 from app.services.models import LoginRequest
 from app.database import get_database
 from pymongo import AsyncMongoClient
@@ -7,16 +7,11 @@ import os
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
-from app.services.jwt import JWTTokens
-
-
-
+from app.auth.jwt import JWTTokens
+from fastapi.middleware.cors import CORSMiddleware
 
 
 load_dotenv(override=True,dotenv_path="D:/Projects/AI Youtube Assistant/app/.env")
-
-
-
 
 
 @asynccontextmanager
@@ -36,6 +31,17 @@ async def lifespan(app: FastAPI):
 
 
 app=FastAPI(title="AI Youtube Assistant",description="FARM Stack and Langchain based AI Assistant where user can chat with AI to get insights inside of an particular youtube video" ,version="1.0.0",lifespan=lifespan)
+
+
+origins=['http://localhost:5173',
+         'http://localhost']
+
+
+app.add_middleware(CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["*"],
+        allow_credentials=True,
+        allow_headers=["*"])
 
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl='/login')
 

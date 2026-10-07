@@ -1,4 +1,6 @@
-import React from 'react'
+import React, { useEffect,useState } from 'react'
+import axios from 'axios';
+
 
 const Home = () => {
   return (
@@ -9,7 +11,9 @@ const Home = () => {
             <p className='text-xl leading-8 poppins-medium-italic text-white'>Turn long YouTube videos into clear, concise summaries and get instant answers to your questions with AI. Paste a video link, ask anything, and get the information you need without watching the entire video.</p>
         </div>
         <div className="right">
-            
+            <p className='text-xl leading-8 poppins-medium-italic text-white'>
+                {data}
+            </p>
         </div>
     </div>
   )

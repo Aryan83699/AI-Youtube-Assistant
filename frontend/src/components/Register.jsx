@@ -1,16 +1,36 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
+
 
 const Register = () => {
+
+  const box = useRef();
+
+  useGSAP(()=>{
+    gsap.from(box.current,{
+      opacity:0,
+      x:500,
+      duration:1,
+      ease:'expo.out'
+    } 
+    )
+  },[])
+
+
+
+
   return (
-    <div className=" register relative z-10 pt-[9vh] p-5 flex justify-evenly ">
+    <div className=" register overflow-hidden relative z-10 pt-[9vh] p-5 flex justify-evenly ">
         <div className="left w-[55%] px-5 py-10">
             <p className='text-7xl leading-20 text-white poppins-extrabold'>Understand <br /> Youtube Videos  <br /> in Seconds</p>
             <br /> 
       
         </div>
         <div className="right w-[35%] h-[88vh] px-5 py-10 flex justify-center items-center">
-          <div className="flex flex-col gap-7 box w-full bg-white/50 px-10 py-8 rounded-md border-1 border-white relative backdrop-blur-xs">
+          <div className="flex flex-col gap-7 box w-full bg-white/50 px-10 py-8 rounded-md border-1 border-white relative backdrop-blur-xs" ref={box}>
 
             <h1 className='text-slate-900 text-center poppins-bold text-2xl'>
               Create Account
