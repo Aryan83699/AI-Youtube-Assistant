@@ -1,14 +1,19 @@
 from fastapi import FastAPI,Request,Depends,HTTPException,Response
+from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
-from app.services.models import LoginRequest
-from app.database import get_database
+from app.services.models import LoginRequest,SignRequesst,Otp
+from app.database import get_database,get_redis
 from pymongo import AsyncMongoClient
 import os
+from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
-from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
 from app.auth.jwt import JWTTokens
 from fastapi.middleware.cors import CORSMiddleware
+import redis.asyncio as redis
+import secrets
+import base64
+from datetime import datetime,timezone
 
 
 load_dotenv(override=True,dotenv_path="D:/Projects/AI Youtube Assistant/app/.env")
@@ -23,9 +28,16 @@ async def lifespan(app: FastAPI):
     await client.admin.command("ping")
     app.state.mongo_client = client
 
+    redisClient=redis.from_url(
+        os.getenv("REDIS_URL"),decode_responses=True
+    )
+    await redisClient.ping()
+    app.state.redis_client=redisClient
+
     try:
         yield
     finally:
+        await redisClient.aclose()
         await client.close()
 
 
@@ -43,11 +55,11 @@ app.add_middleware(CORSMiddleware,
         allow_credentials=True,
         allow_headers=["*"])
 
-oauth2_scheme=OAuth2PasswordBearer(tokenUrl='/login')
-
-
-async def get_database(request:Request):
-    yield request.app.state.mongo_client["ai_youtube"]
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY"),
+    max_age=60
+)
 
 
 @app.get('/')
@@ -55,24 +67,60 @@ def root():
     return {"Message":"Hello World"}
 
 
+@app.post('/register')
+async def register(user_data:SignRequesst, request:Request,db=Depends(get_database),redis_client=Depends(get_redis)):
+    user_email=user_data.email
+    password=user_data.password
+    temp_otp=send_otp(user_email)
+    # user_secret="".join(str(secrets.randbelow(10)) for i in range(6))
+    # request.session['user_secret']=user_secret
+    request.session['get_email']=user_email
+    await redis_client.hset(f"auth:{user_email}",mapping={'otp':temp_otp,"password":base64.b64encode(password.encode('utf-8')),})
+    await redis_client.expire(f"auth:{user_email}",30)
+    return "sucess"
+
 
 @app.post("/login")
-async def login(user_data:LoginRequest,request:Request,response:Response,db=Depends(get_database)):
+async def login(user_data:LoginRequest,request:Request,response:Response,db=Depends(get_database),redis_client=Depends(get_redis)):
     user_email=user_data.email
     password=user_data.password
 
     user=await db['users'].find_one({'email':user_email})
-    if not user or password!=user.get("password") :
+    dec_pass=base64.b64decode(user.get("password")).decode("utf-8")
+    if not user:
         raise HTTPException(status_code=401,detail="User not found")
-    token=JWTTokens()
-    response.set_cookie(key="Token",value=token,secure=False,samesite='lax')
-    return "Success"
+    if dec_pass!=password:
+        raise HTTPException(status_code=401,detail="wrong password")
+    request.session['get_email']=user_email
+    await redis_client.hset(f"auth:{user_email}",mapping={"password":base64.b64encode(password.encode('utf-8')),})
+    await redis_client.expire(f"auth:{user_email}",30)
+    return "sucess"
 
-   
+
+@app.get('/get_tokens')
+async def tokens(request:Request,response:Response,redis_client=Depends(get_redis)):
+    session_email=request.session['get_email']
+    if await redis_client.get("auth")==session_email:
+        token=JWTTokens()
+        response.set_cookie(key="Token",value=token,secure=False,samesite='lax')
+        return "success"
+    raise HTTPException(status_code=401,detail="Invalid Access")
 
 
 
-@app.get('/otp')
-def otp():
-    send_otp("singharyan90827@gmail.com")
-    return "OTP had sent"
+
+@app.post('/otp')
+async def otp(request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=Depends(get_database)):
+    current_useremail = request.session["get_email"]
+    redis_key = f"auth:{current_useremail}"
+    redis_otp = await redis_client.hget(redis_key, "otp")
+    if user_otp.otp == redis_otp:
+        current_password = await redis_client.hget(redis_key, "password")
+        await db["users"].insert_one({
+            "email": current_useremail,
+            "password": current_password,
+            "created_at":datetime.now(timezone.utc),
+            "role": "user"
+        })
+        return "Sucess"
+    raise HTTPException(status_code=401, detail="Invalid OTP")

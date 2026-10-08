@@ -11,3 +11,9 @@ class LoginRequest(BaseModel):
     email:Annotated[EmailStr,Field(title="Valid user email")]
     password:Annotated[str,Field(title="User Password")]
 
+class SignRequesst(BaseModel):
+    email:Annotated[EmailStr,Field(title="Valid user email")]
+    password:Annotated[str,Field(title="User Password")]
+
+class Otp(BaseModel):
+    otp:Annotated[str,Field(title="OTP digits",min_length=6,max_length=6)]

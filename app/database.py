@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 from datetime import timezone , datetime
 import asyncio
+import redis
 
 load_dotenv()
 
@@ -16,3 +17,7 @@ load_dotenv()
 async def get_database(request: Request):
     client = request.app.state.mongo_client
     yield client["ai_youtube"]
+
+
+async def get_redis(request:Request):
+    return request.app.state.redis_client

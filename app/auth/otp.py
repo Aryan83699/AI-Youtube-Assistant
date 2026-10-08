@@ -12,12 +12,15 @@ def send_otp(user_email:str):
     msg['From']=os.getenv("EMAIL")
     msg['To']=user_email
     msg['Subject']='OTP Verification'
-    msg.set_content(f'Your OTP is {"".join(str(secrets.randbelow(10)) for i in range(6))}')
+    temp_otp="".join(str(secrets.randbelow(10)) for i in range(6))
+    msg.set_content(f'Your OTP is {temp_otp}')
 
 
     with SMTP(host='smtp.gmail.com',port=587) as smtp:
         smtp.starttls()
         smtp.login(os.getenv("EMAIL"),os.getenv("PSWD"))
         smtp.send_message(msg)
+
+    return temp_otp
 
 
