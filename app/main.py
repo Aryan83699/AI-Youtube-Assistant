@@ -11,8 +11,9 @@ from contextlib import asynccontextmanager
 from app.auth.jwt import JWTTokens
 from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
+from app.services.pass_hash import hash_password,check_password
 import secrets
-import base64
+# import base64
 from datetime import datetime,timezone
 
 
@@ -75,7 +76,7 @@ async def register(user_data:SignRequesst, request:Request,db=Depends(get_databa
     # user_secret="".join(str(secrets.randbelow(10)) for i in range(6))
     # request.session['user_secret']=user_secret
     request.session['get_email']=user_email
-    await redis_client.hset(f"auth:{user_email}",mapping={'otp':temp_otp,"password":base64.b64encode(password.encode('utf-8')),})
+    await redis_client.hset(f"auth:{user_email}",mapping={'otp':temp_otp,"password":hash_password(password)})
     await redis_client.expire(f"auth:{user_email}",30)
     return "sucess"
 
@@ -86,13 +87,11 @@ async def login(user_data:LoginRequest,request:Request,response:Response,db=Depe
     password=user_data.password
 
     user=await db['users'].find_one({'email':user_email})
-    dec_pass=base64.b64decode(user.get("password")).decode("utf-8")
-    if not user:
-        raise HTTPException(status_code=401,detail="User not found")
-    if dec_pass!=password:
-        raise HTTPException(status_code=401,detail="wrong password")
+    dec_pass=check_password(password,user.get("password"))
+    if not user or not dec_pass:
+        raise HTTPException(status_code=401,detail="Invalid Credentails")
     request.session['get_email']=user_email
-    await redis_client.hset(f"auth:{user_email}",mapping={"password":base64.b64encode(password.encode('utf-8')),})
+    await redis_client.hset(f"auth:{user_email}",mapping={"password":hash_password(password)})
     await redis_client.expire(f"auth:{user_email}",30)
     return "sucess"
 
@@ -109,11 +108,16 @@ async def tokens(request:Request,response:Response,redis_client=Depends(get_redi
 
 
 
-@app.post('/otp')
+@app.post('/otp')   
 async def otp(request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=Depends(get_database)):
     current_useremail = request.session["get_email"]
     redis_key = f"auth:{current_useremail}"
     redis_otp = await redis_client.hget(redis_key, "otp")
+
+    user=db['users'].find_one({'email':current_useremail})
+    if user:
+        raise HTTPException(status_code=401,detail="Users already exists")
+
     if user_otp.otp == redis_otp:
         current_password = await redis_client.hget(redis_key, "password")
         await db["users"].insert_one({
