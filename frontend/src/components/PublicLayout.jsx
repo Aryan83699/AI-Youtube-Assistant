@@ -1,8 +1,12 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet,useNavigation } from 'react-router-dom'
 import Nav from './Nav'
+import Loading from './Loading'
 
 const PublicLayout = () => {
+
+  const navigation = useNavigation();
+
   return (
     <div className="public bg-black min-h-screen w-full relative overflow-y-hidden">
       <Nav />
@@ -18,6 +22,7 @@ const PublicLayout = () => {
         </div>
 
       <div className="content relative z-20">
+        {navigation.state==='loading' && <Loading />}
         <Outlet />
       </div>
     </div>

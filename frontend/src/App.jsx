@@ -1,6 +1,6 @@
-import React from 'react'
-import Nav from './components/Nav';
-import {BrowserRouter , Routes, Route} from 'react-router-dom';
+import React from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
 import Home from './components/Home';
 import About from './components/About';
 import Register from './components/Register';
@@ -10,31 +10,53 @@ import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Otp from './components/Otp';
 
+const router = createBrowserRouter([
+  {
+    element: <PublicLayout />,
+    children: [
+      {
+        path: '/',
+        element: <Home />,
+      },
+      {
+        path: '/about',
+        element: <About />,
+      },
+      {
+        path: '/register',
+        element: <Register />,
+      },
+      {
+        path: '/login',
+        element: <Login />,
+      },
+      {
+        path: '/otp',
+        element: <Otp />,
+          loader: async () => {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          return null;
+        }
+      },
+    ],
+  },
+  {
+    element: <PrivateLayout />,
+    children: [
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+          loader: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return null;
+  }
+      },
+    ],
+  },
+]);
 
 const App = () => {
-  return (
-   <> 
-    <Routes>
+  return <RouterProvider router={router} />;
+};
 
-      {/* Public */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/otp" element={<Otp />} />
-
-      </Route>
-
-      {/* Authenticated */}
-      <Route element={<PrivateLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Route>
-
-    </Routes>
-  </>
-
-  )
-}
-
-export default App
+export default App;
