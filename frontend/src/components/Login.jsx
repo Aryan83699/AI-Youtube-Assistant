@@ -24,7 +24,7 @@ async function sendCredentials(email, password) {
     );
 
     if (response.status === 200) {
-      navigate("/dashboard");
+      navigate("/upload");
     }
   } catch (error) {
     console.log(error);

@@ -14,8 +14,8 @@ class JWTTokens():
         self.ALGO="HS256"
 
     def encode(self,user_id):
-        token=jwt.encode({"sub":user_id , "exp":datetime.now(timezone.utc)+timedelta(minutes=5),"iat":datetime.now(timezone.utc)} , self.SECRET_KEY,algorithm=self.ALGO)
-        return Token(jwt_token=token)
+        token=jwt.encode({"sub":user_id , "exp":datetime.now(timezone.utc)+timedelta(minutes=10),"iat":datetime.now(timezone.utc)} , self.SECRET_KEY,algorithm=self.ALGO)
+        return token
 
     def decode(self,token:Token):
         payload=jwt.decode(token,self.SECRET_KEY,algorithms=self.ALGO)

@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Request,Depends,HTTPException,Response
+from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter
 from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
 from app.services.models import LoginRequest,SignRequesst,Otp
@@ -82,34 +82,26 @@ async def register(user_data:SignRequesst, request:Request,db=Depends(get_databa
 
 
 @app.post("/login")
-async def login(user_data:LoginRequest,request:Request,response:Response,db=Depends(get_database),redis_client=Depends(get_redis)):
-    user_email=user_data.email
-    password=user_data.password
+async def login(user_data: LoginRequest,response: Response,db=Depends(get_database)):
+    user_email = user_data.email
+    password = user_data.password
+    user = await db["users"].find_one({"email": user_email})
+    if not user or not check_password(password, user.get("password")):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
+    token = JWTTokens() 
+    jwt=token.encode(user_email)
+    response.set_cookie(
+        key="Token",value=jwt,httponly=True,secure=False,samesite="lax"
+    )
 
-    user=await db['users'].find_one({'email':user_email})
-    dec_pass=check_password(password,user.get("password"))
-    if not user or not dec_pass:
-        raise HTTPException(status_code=401,detail="Invalid Credentails")
-    request.session['get_email']=user_email
-    await redis_client.hset(f"auth:{user_email}",mapping={"password":hash_password(password)})
-    await redis_client.expire(f"auth:{user_email}",60)
-    return "sucess"
-
-
-@app.get('/get_tokens')
-async def tokens(request:Request,response:Response,redis_client=Depends(get_redis)):
-    session_email=request.session['get_email']
-    if await redis_client.get("auth")==session_email:
-        token=JWTTokens()
-        response.set_cookie(key="Token",value=token,secure=False,samesite='lax')
-        return "success"
-    raise HTTPException(status_code=401,detail="Invalid Access")
-
-
-
+    return {"message": "Login successful"}
+    
 
 @app.post('/otp')   
-async def otp(request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=Depends(get_database)):
+async def otp(response:Response,request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=Depends(get_database)):
     current_useremail = request.session["get_email"]
     redis_key = f"auth:{current_useremail}"
     redis_otp = await redis_client.hget(redis_key, "otp")
@@ -126,5 +118,29 @@ async def otp(request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=
             "created_at":datetime.now(timezone.utc),
             "role": "user"
         })
-        return "Sucess"
+        token = JWTTokens() 
+        jwt=token.encode(current_useremail)
+        response.set_cookie(
+            key="Token",value=jwt,httponly=True,secure=False,samesite="lax"
+        )
+
+        return {"message": "Login successful"}
+        
     raise HTTPException(status_code=401, detail="Invalid OTP")
+
+
+@app.get("/auth")
+async def check_auth(request: Request,db=Depends(get_database)):
+    jwt = request.cookies.get("Token")
+
+    if not jwt:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Verify JWT signature and expiration here
+    token=JWTTokens()
+    payload = token.decode(jwt)
+    user=await db['users'].find_one({'email':payload})
+    if user:
+        return  {"authenticated": True, "user": payload}
+
+    raise HTTPException(status_code=401,detail='Invalid JWT Token')

@@ -1,12 +1,11 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
 import Home from './components/Home';
 import About from './components/About';
 import Register from './components/Register';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
-import Dashboard from './components/Dashboard';
+import Upload from './components/Upload';
 import Login from './components/Login';
 import Otp from './components/Otp';
 
@@ -44,8 +43,8 @@ const router = createBrowserRouter([
     element: <PrivateLayout />,
     children: [
       {
-        path: '/dashboard',
-        element: <Dashboard />,
+        path: '/upload',
+        element: <Upload />,
           loader: async () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     return null;
