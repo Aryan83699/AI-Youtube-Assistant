@@ -77,8 +77,8 @@ async def register(user_data:SignRequesst, request:Request,db=Depends(get_databa
     # request.session['user_secret']=user_secret
     request.session['get_email']=user_email
     await redis_client.hset(f"auth:{user_email}",mapping={'otp':temp_otp,"password":hash_password(password)})
-    await redis_client.expire(f"auth:{user_email}",30)
-    return "sucess"
+    await redis_client.expire(f"auth:{user_email}",60)
+    return "success"
 
 
 @app.post("/login")
@@ -92,7 +92,7 @@ async def login(user_data:LoginRequest,request:Request,response:Response,db=Depe
         raise HTTPException(status_code=401,detail="Invalid Credentails")
     request.session['get_email']=user_email
     await redis_client.hset(f"auth:{user_email}",mapping={"password":hash_password(password)})
-    await redis_client.expire(f"auth:{user_email}",30)
+    await redis_client.expire(f"auth:{user_email}",60)
     return "sucess"
 
 
@@ -114,7 +114,7 @@ async def otp(request: Request,user_otp: Otp,redis_client=Depends(get_redis),db=
     redis_key = f"auth:{current_useremail}"
     redis_otp = await redis_client.hget(redis_key, "otp")
 
-    user=db['users'].find_one({'email':current_useremail})
+    user=await db['users'].find_one({'email':current_useremail})
     if user:
         raise HTTPException(status_code=401,detail="Users already exists")
 

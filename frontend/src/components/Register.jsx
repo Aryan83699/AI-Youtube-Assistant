@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { NavLink, useSearchParams } from 'react-router-dom'
+import { NavLink, UNSAFE_createClientRoutesWithHMRRevalidationOptOut, useNavigate } from 'react-router-dom'
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
@@ -8,6 +8,8 @@ import axios from 'axios';
 const Register = () => {
 
   const box = useRef();
+
+  const navigate = useNavigate();
 
   useGSAP(()=>{
     gsap.from(box.current,{
@@ -54,7 +56,7 @@ const Register = () => {
       
         </div>
         <div className="right w-[35%] h-[88vh] px-5 py-10 flex justify-center items-center">
-          <form onSubmit={(e)=>{e.preventDefault() }}className="flex flex-col gap-7 box w-full bg-white/50 px-10 py-8 rounded-md border-1 border-white relative backdrop-blur-xs" ref={box}>
+          <form onSubmit={(e)=>{e.preventDefault(); sendCredentials(currEmail,currPswd);}}className="flex flex-col gap-7 box w-full bg-white/50 px-10 py-8 rounded-md border-1 border-white relative backdrop-blur-xs" ref={box}>
 
             <h1 className='text-slate-900 text-center poppins-bold text-2xl'>
               Create Account
