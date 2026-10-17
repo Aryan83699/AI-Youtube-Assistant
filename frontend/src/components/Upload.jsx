@@ -21,10 +21,13 @@ const Upload = () => {
       }
     );
 
-    if(response.status===200){
-      navigate('/main');
+    if (response.status === 200) {
+      navigate('/main', {
+        state: {
+          youtubeData: response.data
+        }
+      });
     }
-
       }
       catch(error){
           console.log(error);

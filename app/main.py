@@ -2,7 +2,7 @@ from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter
 from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
 from app.services.models import LoginRequest,SignRequesst,Otp,Url
-from app.services.youtube import has_transcript
+from app.services.youtube import has_transcript,get_video_data
 from app.database import get_database,get_redis
 from pymongo import AsyncMongoClient
 import os
@@ -161,7 +161,10 @@ async def check_transcript(yt_url:Url,request:Request):
     else:
         raise HTTPException(status_code=401,detail="Invalid url")
 
-    return has_transcript(video_id)
+    transcript_data=has_transcript(video_id)
+    video_data=await get_video_data(video_id)
+
+    return {"transcript_data":transcript_data,"video_data":video_data}
     
 
 
