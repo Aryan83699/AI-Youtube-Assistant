@@ -26,7 +26,7 @@ const Register = () => {
 
   async function sendCredentials(email,password){
       try{
-            const response =await axios.post(`${import.meta.env.VITE_BACKEND}/register`,
+            const response =await axios.post(`${import.meta.env.VITE_BACKEND}/check-transcript`,
       {
         email:email,
         password:password

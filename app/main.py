@@ -1,7 +1,8 @@
 from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter
 from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
-from app.services.models import LoginRequest,SignRequesst,Otp
+from app.services.models import LoginRequest,SignRequesst,Otp,Url
+from app.services.youtube import has_transcript
 from app.database import get_database,get_redis
 from pymongo import AsyncMongoClient
 import os
@@ -13,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
 from app.services.pass_hash import hash_password,check_password
 import secrets
-# import base64
+from urllib.parse import urlparse, parse_qs
 from datetime import datetime,timezone
 
 
@@ -144,3 +145,23 @@ async def check_auth(request: Request,db=Depends(get_database)):
         return  {"authenticated": True, "user": payload}
 
     raise HTTPException(status_code=401,detail='Invalid JWT Token')
+
+
+@app.post("/youtube/check-transcript")
+async def check_transcript(yt_url:Url,request:Request):
+    url=str(yt_url.url)
+    print(url)
+    parsed = urlparse(str(url))
+    if parsed.hostname in ("youtube.com", "www.youtube.com", "m.youtube.com"):
+        video_id= parse_qs(parsed.query).get("v", [None])[0]
+
+    elif parsed.hostname == "youtu.be":
+        video_id= parsed.path.lstrip("/").split("/")[0] or None
+
+    else:
+        raise HTTPException(status_code=401,detail="Invalid url")
+
+    return has_transcript(video_id)
+    
+
+

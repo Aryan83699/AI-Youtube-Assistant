@@ -8,6 +8,7 @@ import PrivateLayout from './components/PrivateLayout';
 import Upload from './components/Upload';
 import Login from './components/Login';
 import Otp from './components/Otp';
+import Main from './components/Main';
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
     return null;
   }
       },
+    {
+        path: '/main',
+        element: <Main />,
+          loader: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return null;
+  }
+      }
     ],
   },
 ]);

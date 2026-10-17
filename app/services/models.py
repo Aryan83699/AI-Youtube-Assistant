@@ -1,4 +1,4 @@
-from pydantic import Field,BaseModel,EmailStr
+from pydantic import Field,BaseModel,EmailStr,HttpUrl
 from typing import Annotated
 
 
@@ -17,3 +17,7 @@ class SignRequesst(BaseModel):
 
 class Otp(BaseModel):
     otp:Annotated[str,Field(title="OTP digits",min_length=6,max_length=6)]
+
+
+class Url(BaseModel):
+    url:Annotated[HttpUrl,Field(title="Youtube url")]
