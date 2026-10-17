@@ -190,7 +190,7 @@ async def check_transcript(
 
     # Check the transcript and fetch video details.
     transcript_data = has_transcript(video_id)
-    video_data = await get_video_data(video_id)
+    video_data = await get_video_data(video_id=video_id)
 
     # Schedule transcript processing in the background.
     # This assumes process_video accepts these arguments.
@@ -199,7 +199,7 @@ async def check_transcript(
     bg_tasks.add_task(
         process_video,
         video_id,
-        collection,
+        collection        
     )
 
     return {

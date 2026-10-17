@@ -165,7 +165,7 @@ def get_vector_store(collection):
     )
 
 
-def process_video(video_id: str, collection) -> int:
+def process_video(video_id: str,collection) -> int:
     """Fetch a video's English transcript and store its chunks."""
 
     try:
@@ -212,7 +212,15 @@ def process_video(video_id: str, collection) -> int:
     vector_store = get_vector_store(collection)
     vector_store.add_documents(documents)
 
+    print("Total documents:", collection.count_documents({}))
+    print(
+        "Chunks for this video:",
+        collection.count_documents({"video_id": video_id})
+    )
     return len(documents)
+
+
+
 
 
 def answer_question(
