@@ -72,6 +72,5 @@ async def get_video_data(video_id:str):
         "upload_date": video["snippet"]["publishedAt"],
         "channel": video["snippet"]["channelTitle"],
         "likes": video.get("statistics", {}).get("likeCount"),
-        "views": video.get("statistics", {}).get("viewCount"),
-        "duration": video["contentDetails"]["duration"]
+        "views": video.get("statistics", {}).get("viewCount")
     }

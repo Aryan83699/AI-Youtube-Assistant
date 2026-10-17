@@ -12,7 +12,7 @@ const Main = () => {
 
   return (
 <div className="Main w-full min-h-screen bg-yellow-100 flex flex-col">
-  <div className="mt-16 flex-1 min-h-0">
+  <div className="mt-16 min-h-0 gap-10 flex">
     <Channel youtubeData={youtubeData} />
     <Chat></Chat>
   </div>
