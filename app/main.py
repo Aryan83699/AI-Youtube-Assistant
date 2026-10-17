@@ -1,10 +1,11 @@
-from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter
+from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter,BackgroundTasks
 from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
 from app.services.models import LoginRequest,SignRequesst,Otp,Url
 from app.services.youtube import has_transcript,get_video_data
+from app.services.rag import process_video,answer_question
 from app.database import get_database,get_redis
-from pymongo import AsyncMongoClient
+from pymongo import AsyncMongoClient,MongoClient
 import os
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
@@ -24,24 +25,28 @@ load_dotenv(override=True,dotenv_path="D:/Projects/AI Youtube Assistant/app/.env
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    client = AsyncMongoClient(
-        os.getenv("MONGODB_URL")
-    )
+    client = AsyncMongoClient(os.getenv("MONGODB_URL"))
     await client.admin.command("ping")
     app.state.mongo_client = client
 
-    redisClient=redis.from_url(
-        os.getenv("REDIS_URL"),decode_responses=True
+    # Separate synchronous client for LangChain vector search
+    rag_client = MongoClient(os.getenv("MONGODB_URL"))
+    rag_client.admin.command("ping")
+    app.state.rag_collection = rag_client["ai_youtube"]["rag_embeddings"]
+
+    redisClient = redis.from_url(
+        os.getenv("REDIS_URL"),
+        decode_responses=True,
     )
     await redisClient.ping()
-    app.state.redis_client=redisClient
+    app.state.redis_client = redisClient
 
     try:
         yield
     finally:
         await redisClient.aclose()
         await client.close()
-
+        rag_client.close()
 
 
 app=FastAPI(title="AI Youtube Assistant",description="FARM Stack and Langchain based AI Assistant where user can chat with AI to get insights inside of an particular youtube video" ,version="1.0.0",lifespan=lifespan)
@@ -147,24 +152,78 @@ async def check_auth(request: Request,db=Depends(get_database)):
     raise HTTPException(status_code=401,detail='Invalid JWT Token')
 
 
+
+
 @app.post("/youtube/check-transcript")
-async def check_transcript(yt_url:Url,request:Request):
-    url=str(yt_url.url)
-    print(url)
-    parsed = urlparse(str(url))
-    if parsed.hostname in ("youtube.com", "www.youtube.com", "m.youtube.com"):
-        video_id= parse_qs(parsed.query).get("v", [None])[0]
+async def check_transcript(
+    yt_url: Url,
+    request: Request,
+    bg_tasks: BackgroundTasks,
+):
+    url = str(yt_url.url)
+    parsed = urlparse(url)
+
+    if parsed.hostname in (
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+    ):
+        video_id = parse_qs(parsed.query).get("v", [None])[0]
 
     elif parsed.hostname == "youtu.be":
-        video_id= parsed.path.lstrip("/").split("/")[0] or None
+        video_id = parsed.path.lstrip("/").split("/")[0] or None
 
     else:
-        raise HTTPException(status_code=401,detail="Invalid url")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid YouTube URL",
+        )
 
-    transcript_data=has_transcript(video_id)
-    video_data=await get_video_data(video_id)
+    if not video_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Video ID not found",
+        )
 
-    return {"transcript_data":transcript_data,"video_data":video_data}
-    
+    # Your existing MongoDB client is asynchronous.
+    db = request.app.state.mongo_client["ai_youtube"]
+
+    # Check the transcript and fetch video details.
+    transcript_data = has_transcript(video_id)
+    video_data = await get_video_data(video_id)
+
+    # Schedule transcript processing in the background.
+    # This assumes process_video accepts these arguments.
+    collection = request.app.state.rag_collection
+
+    bg_tasks.add_task(
+        process_video,
+        video_id,
+        collection,
+    )
+
+    return {
+        "transcript_data": transcript_data,
+        "video_data": video_data,
+        "message": "Transcript processing scheduled",
+    }
 
 
+@app.post("/youtube/response")
+async def llm_response(
+    question: str,
+    video_id: str,
+    request: Request,
+):
+    db = request.app.state.mongo_client["ai_youtube"]
+    collection = request.app.state.rag_collection
+    answer = answer_question(
+        question=question,
+        video_id=video_id,
+        collection=collection,
+    )
+
+    return {
+        "AI": answer,
+        "Human": question,
+    }

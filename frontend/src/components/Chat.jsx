@@ -7,7 +7,7 @@ const Chat = () => {
 
 
   return (
-    <div className='Chat px-5 py-7 relative'>
+    <div className='Chat px-5 py-7 h-auto relative'>
         <form className="chat-input absolute bottom-4 left-5" onSubmit={(e)=>{e.preventDefault();}}>
             <div className="box bg-[#FF0033] border-none rounded-2xl flex gap-5 px-5 py-3">
                 <input onChange={(e)=>{setQue(e.target.value)}} className=' font-medium text-white py-1.5 px-5' type="text" size='65' />
