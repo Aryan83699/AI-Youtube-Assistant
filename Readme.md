@@ -124,6 +124,10 @@ MONGODB_URI=your_mongodb_connection_string
 REDIS_URL=your_redis_connection_string
 SECRET_KEY=your_session_secret
 JWT_SECRET_KEY=your_jwt_secret
+GROQ_API_KEY=your_groq_key or any other llm
+YOUTUBE_API=your_google_api
+EMAIL=your_email_forauth
+PSWD=your_email_app_password
 ```
 
 Add any additional environment variables required by the configured language model, email service, or YouTube transcript source.
