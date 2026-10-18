@@ -29,14 +29,14 @@ const PrivateNav = () => {
                 AI Youtube Assistant
             </p>
 
-            <ul className="flex items-center justify-evenly gap-20 text-black poppins-light text-lg px-2">
+            <ul className="flex items-center justify-evenly gap-20 text-white poppins-light text-lg px-2">
                 <NavLink
                     to="/upload"
                     className={({ isActive }) =>
                         `relative transition-all duration-300 ${
                             isActive
                                 ? 'text-orange-400 poppins-bold border-2 pb-1 border-white rounded-sm px-2'
-                                : 'text-black'
+                                : 'text-white'
                         }`
                     }
                 >

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-import Channel from './Channel';
-import Chat from './Chat';
+import Channel from '../components/Channel';
+import Chat from '../components/Chat';
 const Main = () => {
 
   const location=useLocation();

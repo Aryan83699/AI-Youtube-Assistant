@@ -6,7 +6,7 @@ import {
   useNavigation
 } from 'react-router-dom';
 
-import Loading from './Loading';
+import Loading from '../pages/Loading.jsx';
 import axios from 'axios';
 import PrivateNav from './PrivateNav';
 

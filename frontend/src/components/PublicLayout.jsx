@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet,useNavigation } from 'react-router-dom'
 import Nav from './Nav'
-import Loading from './Loading'
+import Loading from '../pages/Loading.jsx'
 
 const PublicLayout = () => {
 

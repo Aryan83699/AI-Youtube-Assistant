@@ -1,14 +1,14 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from './components/Home';
-import About from './components/About';
-import Register from './components/Register';
+import Home from './pages/Home';
+import About from './pages/About';
+import Register from './pages/Register';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
-import Upload from './components/Upload';
-import Login from './components/Login';
-import Otp from './components/Otp';
-import Main from './components/Main';
+import Upload from './pages/Upload';
+import Login from './pages/Login';
+import Otp from './pages/Otp';
+import Main from './pages/Main';
 
 const router = createBrowserRouter([
   {
