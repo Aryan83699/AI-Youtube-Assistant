@@ -1,12 +1,19 @@
 
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import {
+  Outlet,
+  useNavigate,
+  useNavigation
+} from 'react-router-dom';
+
 import Loading from './Loading';
 import axios from 'axios';
 import PrivateNav from './PrivateNav';
 
 const PrivateLayout = () => {
   const navigate = useNavigate();
+  const navigation = useNavigation();
+
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -29,12 +36,19 @@ const PrivateLayout = () => {
     verify();
   }, [navigate]);
 
+  // Authentication check is in progress
   if (loading) {
     return <Loading />;
   }
 
+  // Authentication failed or redirect is pending
   if (!authenticated) {
     return null;
+  }
+
+  // Route loader is in progress
+  if (navigation.state === 'loading') {
+    return <Loading />;
   }
 
   return (

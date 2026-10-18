@@ -32,7 +32,7 @@ const Chat = () => {
     }
 
     return (
-        <div className="Chat relative flex flex-col h-[500px] px-5 py-7">
+        <div className="Chat relative flex flex-col h-full min-h-0 w-full px-5 py-7     ">
 
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto mb-20 space-y-4">
@@ -46,10 +46,10 @@ const Chat = () => {
                         }`}
                     >
                         <div
-                            className={`max-w-[80%] rounded-2xl px-4 py-3 whitespace-pre-wrap break-words ${
+                            className={`max-w-[80%] mr-5 rounded-2xl px-4 py-3 whitespace-pre-wrap break-words ${
                                 message.role === 'ai'
-                                    ? 'bg-[#FF0033] text-white'
-                                    : 'bg-white text-black border border-gray-200'
+                                    ? 'bg-gradient-to-r from-[#f80163] to-[#ff593b] text-white poppins-medium'
+                                    : 'bg-gradient-to-r from-[#ffffff] to-[#ffe3fb] text-black border poppins-medium border-gray-200'
                             }`}
                         >
                             {message.text}
@@ -66,18 +66,18 @@ const Chat = () => {
                     sendQue(currQue);
                 }}
             >
-                <div className="box bg-[#FF0033] rounded-2xl flex gap-3 px-4 py-3">
+                <div className="box bg-gradient-to-r from-[#f05f57] to-[#360940] min-w-170 rounded-2xl flex gap-3 px-4 py-3">
                     <input
                         value={currQue}
-                        size="80"
+                        size=""
                         onChange={(e) => setQue(e.target.value)}
-                        className="flex-1 min-w-0 font-medium text-white py-1.5 px-3 outline-none bg-transparent placeholder:text-white/70"
+                        className="bg-transparent flex-1  poppins-medium font-medium text-white py-1.5 px-3 outline-none placeholder:text-white/70"
                         type="text"
                         placeholder="Ask about this video..."
                     />
 
                     <button
-                        className="bg-gray-50 text-black py-1 px-3 rounded-lg active:scale-95 cursor-pointer"
+                        className="bg-transparent border-2 border-white poppins-bold text-white py-1 px-3 rounded-lg active:scale-95 cursor-pointer"
                         type="submit"
                     >
                         Send

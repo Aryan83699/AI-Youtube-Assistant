@@ -8,8 +8,8 @@ const Loading = () => {
       <div className="relative flex items-center justify-center mb-8">
         <div className="absolute w-28 h-28 rounded-full bg-red-600/20 blur-2xl animate-pulse"></div>
 
-        <div className="relative flex items-center justify-center w-20 h-14 bg-[#ff0033] rounded-2xl shadow-lg shadow-red-600/30 animate-pulse">
-            <img src="logo.jpeg" alt="" />
+        <div className="relative rounded-2xl flex items-center justify-center w-20 h-14 bg-[#ff0033] rounded-2xl shadow-lg shadow-red-600/30 animate-pulse">
+            <img className='rounded-3xl' src="dino.jpg" alt="" />
         </div>
       </div>
 

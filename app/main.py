@@ -222,3 +222,18 @@ async def llm_response(que:ChatQue,request: Request,redis_client=Depends(get_red
         "AI": answer,
         "Human": question,
     }
+
+
+from fastapi import Response
+
+@app.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(
+        key="Token",
+        path="/",
+        httponly=True,
+        samesite="lax",
+        secure=False  # Use True when deployed over HTTPS
+    )
+
+    return {"message": "Logged out successfully"}

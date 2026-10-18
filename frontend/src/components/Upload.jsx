@@ -38,7 +38,7 @@ const Upload = () => {
 
   return (
     <div className="upload h-screen w-full flex justify-center items-center">
-      <form className='flex flex-col justify-evenly items-center  bg-gray-200 rounded-lg h-[60%] mt-10 w-[70%]' onSubmit={(e)=> {e.preventDefault(); sendUrl(curr_url) }}>
+      <form className='flex flex-col justify-evenly items-center   bg-gradient-to-r from-[#ffffff] to-[#ffe2fb] rounded-lg h-[60%] mt-10 w-[70%]' onSubmit={(e)=> {e.preventDefault(); sendUrl(curr_url) }}>
         <p className='poppins-extrabold text-4xl'>Upload Video URL</p>
         <div className="url flex gap-5">
         <input type="text" size="85" className='border-2 border-gray-500 px-5 py-2 rounded-2xl' placeholder='paste url here ....' autoFocus required onChange={(e)=>{seturl(e.target.value)}}/>
