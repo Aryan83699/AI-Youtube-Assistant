@@ -1,7 +1,7 @@
 from fastapi import FastAPI,Request,Depends,HTTPException,Response,APIRouter,BackgroundTasks
 from fastapi.responses import RedirectResponse
 from app.auth.otp import send_otp
-from app.services.models import LoginRequest,SignRequesst,Otp,Url
+from app.services.models import LoginRequest,SignRequesst,Otp,Url,ChatQue
 from app.services.youtube import has_transcript,get_video_data
 from app.services.rag import process_video,answer_question
 from app.database import get_database,get_redis
@@ -65,7 +65,7 @@ app.add_middleware(CORSMiddleware,
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY"),
-    max_age=60
+    max_age=1800
 )
 
 
@@ -142,7 +142,7 @@ async def check_auth(request: Request,db=Depends(get_database)):
     if not jwt:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    # Verify JWT signature and expiration here
+  
     token=JWTTokens()
     payload = token.decode(jwt)
     user=await db['users'].find_one({'email':payload})
@@ -155,11 +155,7 @@ async def check_auth(request: Request,db=Depends(get_database)):
 
 
 @app.post("/youtube/check-transcript")
-async def check_transcript(
-    yt_url: Url,
-    request: Request,
-    bg_tasks: BackgroundTasks,
-):
+async def check_transcript(yt_url: Url,request: Request,bg_tasks: BackgroundTasks):
     url = str(yt_url.url)
     parsed = urlparse(url)
 
@@ -185,15 +181,13 @@ async def check_transcript(
             detail="Video ID not found",
         )
 
-    # Your existing MongoDB client is asynchronous.
+    
     db = request.app.state.mongo_client["ai_youtube"]
 
-    # Check the transcript and fetch video details.
     transcript_data = has_transcript(video_id)
     video_data = await get_video_data(video_id=video_id)
 
-    # Schedule transcript processing in the background.
-    # This assumes process_video accepts these arguments.
+
     collection = request.app.state.rag_collection
 
     bg_tasks.add_task(
@@ -201,6 +195,8 @@ async def check_transcript(
         video_id,
         collection        
     )
+
+    request.session["video_id"] = video_id
 
     return {
         "transcript_data": transcript_data,
@@ -210,18 +206,17 @@ async def check_transcript(
 
 
 @app.post("/youtube/response")
-async def llm_response(
-    question: str,
-    video_id: str,
-    request: Request,
-):
+async def llm_response(que:ChatQue,request: Request,redis_client=Depends(get_redis)):
+    question=que.question
+    print(question)
     db = request.app.state.mongo_client["ai_youtube"]
     collection = request.app.state.rag_collection
-    answer = answer_question(
-        question=question,
-        video_id=video_id,
-        collection=collection,
-    )
+    video_id=request.session.get("video_id")
+    print(video_id)
+    if not video_id:
+        raise HTTPException(status_code=400,detail="Video selection expired. Please select a video again.")
+    
+    answer = answer_question(question=question,video_id=video_id,collection=collection)
 
     return {
         "AI": answer,

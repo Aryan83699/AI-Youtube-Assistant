@@ -21,3 +21,7 @@ class Otp(BaseModel):
 
 class Url(BaseModel):
     url:Annotated[HttpUrl,Field(title="Youtube url")]
+
+
+class ChatQue(BaseModel):
+    question:Annotated[str,Field(title="Question from users")]
